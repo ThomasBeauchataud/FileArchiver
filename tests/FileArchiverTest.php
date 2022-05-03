@@ -1,10 +1,5 @@
 <?php
 
-/*
- * Author Thomas Beauchataud
- * Since 02/05/2022
- */
-
 namespace TBCD\Tests\FileArchiver;
 
 use DateInterval;
@@ -14,6 +9,10 @@ use Symfony\Component\Filesystem\Path;
 use TBCD\FileArchiver\Exception\FileArchiverException;
 use TBCD\FileArchiver\FileArchiver;
 
+/**
+ * @author Thomas Beauchataud
+ * @since 02/05/2021
+ */
 class FileArchiverTest extends TestCase
 {
 
@@ -23,12 +22,12 @@ class FileArchiverTest extends TestCase
      */
     public function testArchive(): void
     {
-        $fileArchiver = new FileArchiver();
+        $fileArchiver = new FileArchiver(sys_get_temp_dir() . '/archive');
         $file = $this->createRandomFile();
         $archiveFilePath = $fileArchiver->archive($file, new DateInterval('PT3H'));
         $this->assertTrue(file_exists($archiveFilePath));
         $this->assertFalse(file_exists($file));
-        $fileArchiver->clear(Path::getFilenameWithoutExtension($file), new DateTime());
+        $fileArchiver->clear(new DateTime());
         $this->assertFalse(file_exists($archiveFilePath));
     }
 
@@ -38,7 +37,7 @@ class FileArchiverTest extends TestCase
      */
     public function testFind(): void
     {
-        $fileArchiver = new FileArchiver();
+        $fileArchiver = new FileArchiver(sys_get_temp_dir() . '/archive');
         $file = $this->createRandomFile();
         $fileArchiver->archive($file, new DateInterval('PT3H'));
         $result = $fileArchiver->find(Path::getFilenameWithoutExtension($file));
@@ -51,21 +50,13 @@ class FileArchiverTest extends TestCase
      */
     public function testClear(): void
     {
-        $fileArchiver = new FileArchiver();
+        $fileArchiver = new FileArchiver(sys_get_temp_dir() . '/archive');
         $file = $this->createRandomFile();
         $archivedFile = $fileArchiver->archive($file, new DateInterval('PT3H'));
-        $fileArchiver->clear(Path::getFilenameWithoutExtension($archivedFile));
+        $fileArchiver->clear();
         $this->assertTrue(file_exists($archivedFile));
-        $fileArchiver->clear(Path::getFilenameWithoutExtension($archivedFile), new DateTime());
+        $fileArchiver->clear(new DateTime());
         $this->assertFalse(file_exists($archivedFile));
-
-        $now = new DateTime();
-        $filePath = sprintf("%s_%s_%s.txt", uniqid(), $now->sub(new DateInterval('PT3H'))->format('YmdHis'), $now->sub(new DateInterval('PT1H'))->format('YmdHis'));
-        $file = fopen($filePath, 'w+');
-        fwrite($file, 'test');
-        fclose($file);
-        $fileArchiver->clear(Path::getFilenameWithoutExtension($filePath));
-        $this->assertFalse(file_exists($filePath));
     }
 
     /**
@@ -73,10 +64,8 @@ class FileArchiverTest extends TestCase
      */
     private function createRandomFile(): string
     {
-        $filePath = uniqid() . '.txt';
-        $file = fopen($filePath, 'w+');
-        fwrite($file, 'test');
-        fclose($file);
+        $filePath = sys_get_temp_dir() . "/" . uniqid() . '.txt';
+        file_put_contents($filePath, "test");
         return $filePath;
     }
 }

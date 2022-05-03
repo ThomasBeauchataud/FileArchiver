@@ -1,10 +1,5 @@
 <?php
 
-/*
- * Author Thomas Beauchataud
- * Since 02/05/2022
- */
-
 namespace TBCD\FileArchiver;
 
 use DateInterval;
@@ -28,19 +23,17 @@ interface FileArchiverInterface
     public function archive(string $filePath, DateInterval $duration, array $context = []): string;
 
     /**
-     * @param string $fileName
      * @param DateTimeInterface|null $from
      * @return void
      * @throws FileArchiverException
      */
-    public function clear(string $fileName, DateTimeInterface $from = null): void;
+    public function clear(DateTimeInterface $from = null): void;
 
     /**
      * @param string $fileName
-     * @param DateTimeInterface $dateTime
      * @return array
      * @throws FileArchiverException
      */
-    public function find(string $fileName, DateTimeInterface $dateTime): array;
+    public function find(string $fileName): array;
 
 }

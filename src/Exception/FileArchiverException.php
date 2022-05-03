@@ -1,10 +1,5 @@
 <?php
 
-/*
- * Author Thomas Beauchataud
- * Since 02/05/2022
- */
-
 namespace TBCD\FileArchiver\Exception;
 
 use Exception;

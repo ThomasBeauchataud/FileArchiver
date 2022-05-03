@@ -35,27 +35,23 @@ $fileArchiver = new FileArchiver('/my/storage/directory');
 The archive rotation is proceeded each time you archive a file with the same mask.
 
 For exemple let's imagine we archived our file `demo.txt` 2 hours ago for a duration of 1 jour. When we will archive our
-new file, the previous archived will be deleted because he overlaps his archive duration
-
-> The file rotation on archive affect only files with the same filename. To clear all expired archives when a new file
-> is archived, you have to change the second argument constructor as below
-> ```
-> $fileArchiver = new FileArchiver('/my/storage/directory', false);
-> ```
+new file, the previous archived will be deleted because he overlaps his archive duration.
 
 You can anyway clear the archived files the way you want by calling the clear method
-```
-// This will clear all file with the mask 'demo*' having an expired archive duration
-$fileArchiver->clear('demo');
 
-// This will clear all file with the mask '*' archived before the passed date
+```
+// This will clear all files having an expired archive duration
+$fileArchiver->clear();
+
+// This will clear all files archived before the passed date
 // In the exemple below it will clear all archived files
-$fileArchiver->clear('', new DateTime());
+$fileArchiver->clear(new DateTime());
 ```
 
 ## Recovery
 
 You can recover archived files as below and obtain the list of archived files with the given mask
+
 ```
 $archivedFilesPath = $fileArchiver->find('demo');
 ```
