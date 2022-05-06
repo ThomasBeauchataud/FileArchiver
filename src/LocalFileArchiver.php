@@ -15,7 +15,7 @@ use TBCD\FileArchiver\Exception\FileArchiverException;
  * @author Thomas Beauchataud
  * @since 02/05/2021
  */
-class FileArchiver implements FileArchiverInterface
+class LocalFileArchiver implements FileArchiverInterface
 {
 
     private Filesystem $filesystem;
@@ -24,15 +24,13 @@ class FileArchiver implements FileArchiverInterface
 
     /**
      * @param string|null $workspace
-     * @param Filesystem $filesystem
-     * @param Finder $finder
      */
-    public function __construct(string $workspace = null, Filesystem $filesystem = new Filesystem(), Finder $finder = new Finder())
+    public function __construct(string $workspace = null)
     {
         $workspace = $workspace ?? getcwd() . "/archive";
         $this->workspace = Path::normalize($workspace);
-        $this->filesystem = $filesystem;
-        $this->finder = $finder;
+        $this->filesystem = new Filesystem();
+        $this->finder = new Finder();
     }
 
 
@@ -69,7 +67,6 @@ class FileArchiver implements FileArchiverInterface
     public function clear(DateTimeInterface $from = null): void
     {
         $now = new DateTime();
-
         $finder = $this->finder->files()->in($this->workspace);
 
         foreach ($finder as $file) {

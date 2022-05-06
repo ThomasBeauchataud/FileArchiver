@@ -7,7 +7,7 @@ use DateTime;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Path;
 use TBCD\FileArchiver\Exception\FileArchiverException;
-use TBCD\FileArchiver\FileArchiver;
+use TBCD\FileArchiver\LocalFileArchiver;
 
 /**
  * @author Thomas Beauchataud
@@ -22,7 +22,7 @@ class FileArchiverTest extends TestCase
      */
     public function testArchive(): void
     {
-        $fileArchiver = new FileArchiver(sys_get_temp_dir() . '/archive');
+        $fileArchiver = new LocalFileArchiver();
         $file = $this->createRandomFile();
         $archiveFilePath = $fileArchiver->archive($file, new DateInterval('PT3H'));
         $this->assertTrue(file_exists($archiveFilePath));
@@ -37,7 +37,7 @@ class FileArchiverTest extends TestCase
      */
     public function testFind(): void
     {
-        $fileArchiver = new FileArchiver(sys_get_temp_dir() . '/archive');
+        $fileArchiver = new LocalFileArchiver();
         $file = $this->createRandomFile();
         $fileArchiver->archive($file, new DateInterval('PT3H'));
         $result = $fileArchiver->find(Path::getFilenameWithoutExtension($file));
@@ -50,7 +50,7 @@ class FileArchiverTest extends TestCase
      */
     public function testClear(): void
     {
-        $fileArchiver = new FileArchiver(sys_get_temp_dir() . '/archive');
+        $fileArchiver = new LocalFileArchiver();
         $file = $this->createRandomFile();
         $archivedFile = $fileArchiver->archive($file, new DateInterval('PT3H'));
         $fileArchiver->clear();
