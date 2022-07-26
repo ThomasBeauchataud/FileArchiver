@@ -20,8 +20,8 @@ interface FileArchiverInterface
      *
      * @param string $filePath The absolute path of the file to archive
      * @param DateInterval $duration The duration of the archive
-     * @param array $context THROW_ON_MISSING_FILE: determine is the methode must throw an exception if the file doesn't exists
-     * @return string|null The path of the archived file or null if nothing has benn archived
+     * @param array $context THROW_ON_MISSING_FILE: determine if the method must throw an exception when the file doesn't exists
+     * @return string|null The path of the archived file or null if nothing has been archived
      * @throws FileArchiverException
      */
     public function archive(string $filePath, DateInterval $duration, array $context = []): string|null;
