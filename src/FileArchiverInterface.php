@@ -13,14 +13,18 @@ use TBCD\FileArchiver\Exception\FileArchiverException;
 interface FileArchiverInterface
 {
 
+    public const THROW_ON_MISSING_FILE = 'THROW_ON_MISSING_FILE';
+
     /**
-     * @param string $filePath
-     * @param DateInterval $duration
-     * @param array $context
-     * @return string
+     * Archive a file for a specific duration
+     *
+     * @param string $filePath The absolute path of the file to archive
+     * @param DateInterval $duration The duration of the archive
+     * @param array $context THROW_ON_MISSING_FILE: determine is the methode must throw an exception if the file doesn't exists
+     * @return string|null The path of the archived file or null if nothing has benn archived
      * @throws FileArchiverException
      */
-    public function archive(string $filePath, DateInterval $duration, array $context = []): string;
+    public function archive(string $filePath, DateInterval $duration, array $context = []): string|null;
 
     /**
      * @param DateTimeInterface|null $from

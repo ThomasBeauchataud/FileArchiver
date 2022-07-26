@@ -37,10 +37,14 @@ class LocalFileArchiver implements FileArchiverInterface
     /**
      * @inheritDoc
      */
-    public function archive(string $filePath, DateInterval $duration, array $context = []): string
+    public function archive(string $filePath, DateInterval $duration, array $context = []): string|null
     {
         if (!$this->filesystem->exists($filePath)) {
-            throw new FileArchiverException("Unable to find the file $filePath");
+            if ($context[self::THROW_ON_MISSING_FILE] ?? false) {
+                throw new FileArchiverException("Unable to find the file $filePath");
+            } else {
+                return null;
+            }
         }
 
         if (!$this->filesystem->exists($this->workspace)) {
@@ -60,9 +64,9 @@ class LocalFileArchiver implements FileArchiverInterface
     }
 
     /**
-     * @throws Exception
-     *
      * @inheritDoc
+     *
+     * @throws Exception
      */
     public function clear(DateTimeInterface $from = null): void
     {
