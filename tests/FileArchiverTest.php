@@ -4,59 +4,88 @@ namespace TBCD\Tests\FileArchiver;
 
 use DateInterval;
 use DateTime;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\Filesystem as Flysystem;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Path;
-use TBCD\FileArchiver\Exception\FileArchiverException;
-use TBCD\FileArchiver\LocalFileArchiver;
+use TBCD\FileArchiver\FileArchiver;
+use TBCD\FileArchiver\FileArchiverInterface;
 
-/**
- * @author Thomas Beauchataud
- * @since 02/05/2021
- */
 class FileArchiverTest extends TestCase
 {
 
     /**
      * @return void
-     * @throws FileArchiverException
+     */
+    public static function setUpBeforeClass(): void
+    {
+        $dirList = [
+            Path::canonicalize(__DIR__ . '/../var/tmp'),
+            Path::canonicalize(__DIR__ . '/../var/archives'),
+            Path::canonicalize(__DIR__ . '/../var/retrieves')
+        ];
+
+        foreach ($dirList as $dir) {
+            if (!file_exists($dir)) {
+                mkdir($dir);
+            } else {
+                foreach (scandir($dir) as $file) {
+                    @unlink($file);
+                }
+            }
+        }
+    }
+
+    /**
+     * @return void
+     * @throws FilesystemException
      */
     public function testArchive(): void
     {
-        $fileArchiver = new LocalFileArchiver();
+        $fileArchiver = $this->createFileArchiver();
         $file = $this->createRandomFile();
-        $archiveFilePath = $fileArchiver->archive($file, new DateInterval('PT3H'));
-        $this->assertTrue(file_exists($archiveFilePath));
-        $this->assertFalse(file_exists($file));
-        $fileArchiver->clear(new DateTime());
-        $this->assertFalse(file_exists($archiveFilePath));
+        $duration = new DateInterval('PT3H');
+        $fileArchiver->archive($file, $duration);
+        $this->assertFileDoesNotExist($file);
+        $this->assertTrue($fileArchiver->has($file));
     }
 
     /**
      * @return void
-     * @throws FileArchiverException
-     */
-    public function testFind(): void
-    {
-        $fileArchiver = new LocalFileArchiver();
-        $file = $this->createRandomFile();
-        $fileArchiver->archive($file, new DateInterval('PT3H'));
-        $result = $fileArchiver->find(Path::getFilenameWithoutExtension($file));
-        $this->assertNotEmpty($result);
-    }
-
-    /**
-     * @return void
-     * @throws FileArchiverException
+     * @throws FilesystemException
      */
     public function testClear(): void
     {
-        $fileArchiver = new LocalFileArchiver();
+        $fileArchiver = $this->createFileArchiver();
         $file = $this->createRandomFile();
-        $archivedFile = $fileArchiver->archive($file, new DateInterval('PT3H'));
+        $fileArchiver->archive($file, new DateInterval('PT3H'));
         $fileArchiver->clear();
-        $this->assertTrue(file_exists($archivedFile));
+        $this->assertTrue($fileArchiver->has($file));
         $fileArchiver->clear(new DateTime());
-        $this->assertFalse(file_exists($archivedFile));
+        $this->assertFalse($fileArchiver->has($file));
+        $file = $this->createRandomFile();
+        $fileArchiver->archive($file, new DateInterval('PT1S'));
+        sleep(2);
+        $fileArchiver->clear();
+        $this->assertFalse($fileArchiver->has($file));
+    }
+
+    /**
+     * @return void
+     * @throws FilesystemException
+     */
+    public function testRetrieve(): void
+    {
+        $fileArchiver = $this->createFileArchiver();
+        $file = $this->createRandomFile();
+        $fileArchiver->archive($file, new DateInterval('PT3H'));
+        $retrievedFiles = $fileArchiver->retrieve(uniqid(), Path::canonicalize(__DIR__ . '/../var/retrieves'));
+        $this->assertEmpty($retrievedFiles);
+        $retrievedFiles = $fileArchiver->retrieve($file, Path::canonicalize(__DIR__ . '/../var/retrieves'));
+        $this->assertNotEmpty($retrievedFiles);
+        $this->assertFileExists($retrievedFiles[0]);
+        $this->assertEquals(Path::canonicalize(__DIR__ . '/../var/retrieves'), Path::getDirectory($retrievedFiles[0]));
     }
 
     /**
@@ -64,8 +93,16 @@ class FileArchiverTest extends TestCase
      */
     private function createRandomFile(): string
     {
-        $filePath = sys_get_temp_dir() . "/" . uniqid() . '.txt';
-        file_put_contents($filePath, "test");
-        return $filePath;
+        $filepath = __DIR__ . '/../var/tmp/' . uniqid() . '.txt';
+        file_put_contents($filepath, "test");
+        return Path::canonicalize($filepath);
+    }
+
+    /**
+     * @return FileArchiverInterface
+     */
+    private function createFileArchiver(): FileArchiverInterface
+    {
+        return new FileArchiver(new Flysystem(new LocalFilesystemAdapter(Path::canonicalize(__DIR__ . '/../var/archives'))));
     }
 }

@@ -4,40 +4,43 @@ namespace TBCD\FileArchiver;
 
 use DateInterval;
 use DateTimeInterface;
-use TBCD\FileArchiver\Exception\FileArchiverException;
+use Exception;
+use League\Flysystem\FilesystemException;
 
-/**
- * @author Thomas Beauchataud
- * @since 02/05/2021
- */
 interface FileArchiverInterface
 {
 
-    public const THROW_ON_MISSING_FILE = 'THROW_ON_MISSING_FILE';
-
     /**
-     * Archive a file for a specific duration
-     *
-     * @param string $filePath The absolute path of the file to archive
-     * @param DateInterval $duration The duration of the archive
-     * @param array $context THROW_ON_MISSING_FILE: determine if the method must throw an exception when the file doesn't exists
-     * @return string|null The path of the archived file or null if nothing has been archived
-     * @throws FileArchiverException
+     * @param string $filepath
+     * @param DateInterval $duration
+     * @return void
+     * @throws FilesystemException
+     * @throws Exception
      */
-    public function archive(string $filePath, DateInterval $duration, array $context = []): string|null;
+    public function archive(string $filepath, DateInterval $duration): void;
 
     /**
      * @param DateTimeInterface|null $from
      * @return void
-     * @throws FileArchiverException
+     * @throws FilesystemException
+     * @throws Exception
      */
-    public function clear(DateTimeInterface $from = null): void;
+    public function clear(?DateTimeInterface $from = null): void;
 
     /**
-     * @param string $fileName
-     * @return array
-     * @throws FileArchiverException
+     * @param string $filename
+     * @return bool
+     * @throws FilesystemException
+     * @throws Exception
      */
-    public function find(string $fileName): array;
+    public function has(string $filename): bool;
+
+    /**
+     * @param string $filename
+     * @param string $directory
+     * @throws FilesystemException
+     * @throws Exception
+     */
+    public function retrieve(string $filename, string $directory): array;
 
 }
